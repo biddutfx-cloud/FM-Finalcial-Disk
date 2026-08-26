@@ -1,0 +1,2536 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Disk</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000040">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/Icon.png">
+  <link rel="icon" type="image/png" href="assets/Icon.png">
+  <link rel="shortcut icon" type="image/png" href="assets/Icon.png">
+  <link rel="icon" type="image/x-icon" href="assets/app.ico">
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+    }
+
+    body {
+      background: navy;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    #tabs {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      z-index: 5;
+      background: rgba(0, 0, 40, 0.35);
+    }
+
+    #logo {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 36px;
+      width: 36px;
+      object-fit: contain;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    #logo:hover {
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    #logo:active {
+      transform: translateY(-50%) scale(0.95);
+    }
+
+    @keyframes appShake {
+      0% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+
+      10% {
+        transform: translate(-5px, 3px) rotate(-1deg);
+      }
+
+      20% {
+        transform: translate(6px, -4px) rotate(1deg);
+      }
+
+      30% {
+        transform: translate(-6px, 4px) rotate(-1deg);
+      }
+
+      40% {
+        transform: translate(5px, -3px) rotate(0.8deg);
+      }
+
+      50% {
+        transform: translate(-4px, 3px) rotate(-0.8deg);
+      }
+
+      60% {
+        transform: translate(4px, -2px) rotate(0.5deg);
+      }
+
+      70% {
+        transform: translate(-3px, 2px) rotate(-0.5deg);
+      }
+
+      80% {
+        transform: translate(2px, -1px) rotate(0.2deg);
+      }
+
+      90% {
+        transform: translate(-1px, 1px) rotate(-0.1deg);
+      }
+
+      100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+    }
+
+    .shaking {
+      animation: appShake 2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
+
+    .tab {
+      padding: 7px 28px;
+      font-size: 15px;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+      border-radius: 20px;
+      border: 1px solid #3355aa;
+      background: #001238;
+      color: #cfe0ff;
+      cursor: pointer;
+    }
+
+    .tab:hover {
+      border-color: #6688dd;
+    }
+
+    .tab.active {
+      background: #2266cc;
+      color: white;
+      border-color: #66aaff;
+      font-weight: bold;
+    }
+
+    .view {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    #homeView {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-top: 52px;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #time {
+      color: red;
+      font-weight: bold;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 88px;
+      line-height: 1.1;
+    }
+
+    #date {
+      color: white;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+      font-size: 18px;
+      margin-top: 8px;
+    }
+
+    #weather {
+      color: #cfe0ff;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+      font-size: 16px;
+      margin-top: 6px;
+    }
+
+    #changeLoc {
+      position: fixed;
+      right: 12px;
+      bottom: 10px;
+      color: #7f9fd0;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      z-index: 6;
+    }
+
+    #changeLoc:hover {
+      color: white;
+    }
+
+    #setup {
+      position: fixed;
+      inset: 0;
+      background: #000c28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+    }
+
+    .box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+    }
+
+    .box .label {
+      color: white;
+      font-size: 20px;
+    }
+
+    #locSelect {
+      width: 280px;
+      padding: 10px 14px;
+      font-size: 17px;
+      font-family: inherit;
+      border: 2px solid #3355aa;
+      border-radius: 8px;
+      outline: none;
+      background: #001238;
+      color: white;
+      text-align: center;
+    }
+
+    #locSelect:focus {
+      border-color: #6688dd;
+    }
+
+    #locBtn,
+    #nbTodayBtn,
+    .nbtn {
+      padding: 9px 28px;
+      font-size: 16px;
+      font-family: inherit;
+      border: none;
+      border-radius: 8px;
+      background: #2266cc;
+      color: white;
+      cursor: pointer;
+    }
+
+    #locBtn:hover,
+    #nbTodayBtn:hover,
+    .nbtn:hover {
+      background: #3377dd;
+    }
+
+    #nbView {
+      padding-top: 60px;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .nb {
+      width: min(940px, 96vw);
+      color: white;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+      padding-bottom: 30px;
+    }
+
+    .nb-label {
+      color: #9fb8e8;
+      font-size: 13px;
+      letter-spacing: 1px;
+      margin: 18px 2px 8px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 7px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      border-radius: 18px;
+      border: 1px solid #3355aa;
+      background: #001238;
+      color: #cfe0ff;
+      cursor: pointer;
+    }
+
+    .chip:hover {
+      border-color: #88aaee;
+    }
+
+    .chip.active {
+      background: #2266cc;
+      border-color: #66aaff;
+      color: white;
+      font-weight: bold;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+
+    .wd {
+      text-align: center;
+      color: #9fb8e8;
+      font-size: 13px;
+      padding: 6px 0;
+    }
+
+    .day {
+      aspect-ratio: 1 / 1;
+      max-width: 64px;
+      justify-self: center;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-family: inherit;
+      border-radius: 50%;
+      border: 1px solid transparent;
+      background: transparent;
+      color: #dce8ff;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .day:hover {
+      background: #16306b;
+    }
+
+    .day.other {
+      visibility: hidden;
+    }
+
+    .day.today {
+      border-color: gold;
+    }
+
+    .day.sel {
+      background: red;
+      color: white;
+      font-weight: bold;
+      border-color: #ff8080;
+    }
+
+    .day .dnum {
+      line-height: 1;
+    }
+
+    .day .ntag {
+      font-size: 8px;
+      color: #ffd76e;
+      line-height: 1;
+    }
+
+    #nbTodayBtn {
+      margin-top: 20px;
+    }
+
+    .nb-hint {
+      margin-top: 14px;
+      color: #7f9fd0;
+      font-size: 12px;
+    }
+
+    .nb-cols {
+      display: flex;
+      gap: 26px;
+      align-items: flex-start;
+    }
+
+    .nb-cal {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .nb-side {
+      flex: 0 0 300px;
+      background: #001238;
+      border: 2px solid #3355aa;
+      border-radius: 10px;
+      padding: 14px;
+      box-sizing: border-box;
+    }
+
+    #sideTitle {
+      color: #cfe0ff;
+      font-size: 15px;
+      font-weight: bold;
+      margin: 0 0 8px;
+    }
+
+    #sideNote {
+      width: 100%;
+      height: 170px;
+      box-sizing: border-box;
+      resize: vertical;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-family: inherit;
+      border: 1px solid #3355aa;
+      border-radius: 8px;
+      outline: none;
+      background: #000a24;
+      color: white;
+      user-select: text;
+    }
+
+    #sideNote:focus {
+      border-color: #6688dd;
+    }
+
+    .nb-btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    #sideLock {
+      margin-top: 10px;
+      color: #ffb27f;
+      font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+      .nb-cols {
+        flex-direction: column;
+      }
+
+      .nb-side {
+        flex: 1 1 auto;
+        width: 100%;
+      }
+    }
+
+    #settingsView,
+    #transactionView {
+      padding-top: 66px;
+      padding-bottom: 40px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      overflow-y: auto;
+      max-height: calc(100vh - 52px);
+      box-sizing: border-box;
+    }
+
+    .settings-container,
+    .tx-container {
+      width: min(500px, 92vw);
+      padding: 0 10px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .tx-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .tx-back-btn {
+      padding: 8px 20px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .tx-taka-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 2px solid #ffd700;
+      background: #001238;
+      color: #ffd700;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.35);
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .tx-taka-btn:hover {
+      transform: scale(1.1);
+      background: #002266;
+      box-shadow: 0 6px 16px rgba(255, 215, 0, 0.5);
+    }
+
+    .tx-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .tx-field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tx-label {
+      font-size: 15px;
+      color: #9fb8e8;
+      font-weight: 500;
+    }
+
+    .tx-input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px 14px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 2px solid #3355aa;
+      border-radius: 10px;
+      outline: none;
+      background: #000a24;
+      color: white;
+    }
+
+    .tx-input:focus {
+      border-color: #6688dd;
+    }
+
+    .tx-btn-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .tx-saved-msg {
+      color: #4ade80;
+      font-weight: bold;
+      font-size: 14px;
+      text-align: center;
+      padding: 6px;
+      background: rgba(74, 222, 128, 0.1);
+      border-radius: 8px;
+    }
+
+    .tx-summary-card {
+      margin-top: 10px;
+      background: #000a24;
+      border: 1px solid #3355aa;
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .tx-summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 15px;
+      color: #cfe0ff;
+    }
+
+    .tx-summary-item.total {
+      border-top: 1px dashed #3355aa;
+      padding-top: 12px;
+      font-weight: bold;
+      font-size: 18px;
+      color: #ffd700;
+    }
+
+    .tx-summary-val {
+      font-weight: 600;
+    }
+
+    /* Light Theme Transaction overrides */
+    html[data-theme="light"] .tx-input {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    html[data-theme="light"] .tx-label {
+      color: #475569;
+    }
+
+    html[data-theme="light"] .tx-summary-card {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    html[data-theme="light"] .tx-summary-item {
+      color: #334155;
+    }
+
+    html[data-theme="light"] .tx-summary-item.total {
+      border-color: #cbd5e1;
+      color: #2563eb;
+    }
+
+    html[data-theme="light"] .tx-taka-btn {
+      background: #ffffff;
+      border-color: #d97706;
+      color: #d97706;
+    }
+
+    /* Dark Theme Transaction overrides */
+    html[data-theme="dark"] .tx-input {
+      background: #1a1d26;
+      border-color: #2e3446;
+      color: white;
+    }
+
+    html[data-theme="dark"] .tx-label {
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] .tx-summary-card {
+      background: #1a1d26;
+      border-color: #2e3446;
+    }
+
+    html[data-theme="dark"] .tx-summary-item {
+      color: #cbd5e1;
+    }
+
+    html[data-theme="dark"] .tx-summary-item.total {
+      border-color: #2e3446;
+      color: #fbbf24;
+    }
+
+    html[data-theme="dark"] .tx-taka-btn {
+      background: #1a1d26;
+    }
+
+    .settings-box {
+      background: #001238;
+      border: 2px solid #3355aa;
+      border-radius: 14px;
+      padding: 24px;
+      color: white;
+      font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .setting-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #cfe0ff;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #3355aa;
+      padding-bottom: 10px;
+    }
+
+    .theme-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-family: inherit;
+      border-radius: 10px;
+      border: 2px solid #3355aa;
+      background: #001a4d;
+      color: #cfe0ff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .theme-btn:hover {
+      border-color: #6688dd;
+      background: #002266;
+    }
+
+    .theme-btn.active {
+      border-color: #66aaff;
+      background: #2266cc;
+      color: white;
+      font-weight: bold;
+    }
+
+    .theme-color-preview {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-block;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .preview-blue {
+      background: #001238;
+    }
+
+    .preview-light {
+      background: #f1f5f9;
+    }
+
+    .preview-dark {
+      background: #121212;
+    }
+
+    /* Button Color Options */
+    .btn-color-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-family: inherit;
+      border-radius: 10px;
+      border: 2px solid #3355aa;
+      background: #001a4d;
+      color: #cfe0ff;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .btn-color-btn:hover {
+      border-color: #6688dd;
+      background: #002266;
+    }
+
+    .btn-color-btn.active {
+      border-color: #ffffff;
+      font-weight: bold;
+    }
+
+    .preview-purple-blue {
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+    }
+
+    .preview-red {
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+    }
+
+    .preview-btn-blue {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    .preview-green {
+      background: linear-gradient(135deg, #22c55e, #15803d);
+    }
+
+    .preview-yellow {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
+    }
+
+    .preview-rainbow {
+      background: linear-gradient(135deg, #ef4444, #eab308, #22c55e, #3b82f6, #8b5cf6);
+    }
+
+    /* Dynamic Button Color Definitions */
+    html[data-btn-color="purple-blue"] {
+      --btn-bg: linear-gradient(135deg, #7c3aed, #2563eb);
+      --btn-hover: linear-gradient(135deg, #6d28d9, #1d4ed8);
+      --btn-border: #a78bfa;
+    }
+
+    html[data-btn-color="red"] {
+      --btn-bg: linear-gradient(135deg, #ef4444, #b91c1c);
+      --btn-hover: linear-gradient(135deg, #dc2626, #991b1b);
+      --btn-border: #fca5a5;
+    }
+
+    html[data-btn-color="blue"] {
+      --btn-bg: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      --btn-hover: linear-gradient(135deg, #2563eb, #1e40af);
+      --btn-border: #93c5fd;
+    }
+
+    html[data-btn-color="green"] {
+      --btn-bg: linear-gradient(135deg, #22c55e, #15803d);
+      --btn-hover: linear-gradient(135deg, #16a34a, #166534);
+      --btn-border: #86efac;
+    }
+
+    html[data-btn-color="yellow"] {
+      --btn-bg: linear-gradient(135deg, #eab308, #ca8a04);
+      --btn-hover: linear-gradient(135deg, #ca8a04, #854d0e);
+      --btn-border: #fef08a;
+    }
+
+    html[data-btn-color="rainbow"] {
+      --btn-bg: linear-gradient(135deg, #ef4444, #eab308, #22c55e, #3b82f6, #8b5cf6);
+      --btn-hover: linear-gradient(135deg, #dc2626, #ca8a04, #16a34a, #2563eb, #7c3aed);
+      --btn-border: #ffffff;
+    }
+
+    /* Applying Button Colors across app components */
+    .tab.active,
+    #locBtn,
+    #nbTodayBtn,
+    .nbtn,
+    .chip.active,
+    .theme-btn.active,
+    .btn-color-btn.active {
+      background: var(--btn-bg, linear-gradient(135deg, #7c3aed, #2563eb)) !important;
+      color: #ffffff !important;
+      border-color: var(--btn-border, #a78bfa) !important;
+    }
+
+    #locBtn:hover,
+    #nbTodayBtn:hover,
+    .nbtn:hover {
+      background: var(--btn-hover, linear-gradient(135deg, #6d28d9, #1d4ed8)) !important;
+    }
+
+    /* Light Theme */
+    html[data-theme="light"] body {
+      background: #eef2f6;
+      color: #1e293b;
+    }
+
+    html[data-theme="light"] #tabs {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    html[data-theme="light"] .tab {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    html[data-theme="light"] .tab.active {
+      background: #2563eb;
+      color: white;
+      border-color: #2563eb;
+    }
+
+    html[data-theme="light"] #date {
+      color: #334155;
+    }
+
+    html[data-theme="light"] #weather {
+      color: #475569;
+    }
+
+    html[data-theme="light"] #changeLoc {
+      color: #475569;
+    }
+
+    html[data-theme="light"] #changeLoc:hover {
+      color: #0f172a;
+    }
+
+    html[data-theme="light"] .nb {
+      color: #1e293b;
+    }
+
+    html[data-theme="light"] .chip {
+      background: #e2e8f0;
+      border-color: #cbd5e1;
+      color: #334155;
+    }
+
+    html[data-theme="light"] .chip.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: white;
+    }
+
+    html[data-theme="light"] .day {
+      color: #334155;
+    }
+
+    html[data-theme="light"] .day:hover {
+      background: #cbd5e1;
+    }
+
+    html[data-theme="light"] .wd,
+    html[data-theme="light"] .nb-label,
+    html[data-theme="light"] .nb-hint {
+      color: #475569;
+    }
+
+    html[data-theme="light"] #sideNote {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    html[data-theme="light"] #setup {
+      background: #eef2f6;
+    }
+
+    html[data-theme="light"] .box .label {
+      color: #0f172a;
+    }
+
+    html[data-theme="light"] #locSelect {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    /* Dark Theme */
+    html[data-theme="dark"] body {
+      background: #0d0f14;
+      color: #e2e8f0;
+    }
+
+    html[data-theme="dark"] #tabs {
+      background: rgba(18, 20, 28, 0.85);
+    }
+
+    html[data-theme="dark"] .tab {
+      background: #1a1d26;
+      border-color: #2e3446;
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] .tab.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #60a5fa;
+    }
+
+    html[data-theme="dark"] #date {
+      color: #cbd5e1;
+    }
+
+    html[data-theme="dark"] #weather {
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] #changeLoc {
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] #changeLoc:hover {
+      color: white;
+    }
+
+    html[data-theme="dark"] .chip {
+      background: #1a1d26;
+      border-color: #2e3446;
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] .chip.active {
+      background: #3b82f6;
+      border-color: #60a5fa;
+      color: white;
+    }
+
+    html[data-theme="dark"] .day {
+      color: #cbd5e1;
+    }
+
+    html[data-theme="dark"] .day:hover {
+      background: #2e3446;
+    }
+
+    html[data-theme="dark"] .wd,
+    html[data-theme="dark"] .nb-label,
+    html[data-theme="dark"] .nb-hint {
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] #setup {
+      background: #0d0f14;
+    }
+
+    html[data-theme="dark"] .box .label {
+      color: #e2e8f0;
+    }
+
+    html[data-theme="dark"] #locSelect {
+      background: #1a1d26;
+      border-color: #2e3446;
+      color: white;
+    }
+
+    /* Language Selector */
+    .lang-select-label {
+      display: block;
+      font-size: 14px;
+      color: #9fb8e8;
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .lang-select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 2px solid #3355aa;
+      border-radius: 8px;
+      outline: none;
+      background: #001238;
+      color: white;
+      cursor: pointer;
+    }
+
+    .lang-select:focus {
+      border-color: #6688dd;
+    }
+
+    .lang-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .lang-search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 14px;
+      font-size: 16px;
+      font-family: inherit;
+      border: 2px solid #3355aa;
+      border-radius: 8px;
+      outline: none;
+      background: #001238;
+      color: white;
+    }
+
+    .lang-search:focus {
+      border-color: #6688dd;
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      max-height: 240px;
+      overflow-y: auto;
+      background: #001238;
+      border: 2px solid #3355aa;
+      border-radius: 8px;
+      z-index: 20;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .lang-opt {
+      padding: 9px 14px;
+      font-size: 15px;
+      color: #cfe0ff;
+      cursor: pointer;
+    }
+
+    .lang-opt:hover {
+      background: #16306b;
+    }
+
+    .lang-opt.sel {
+      background: #2266cc;
+      color: white;
+      font-weight: bold;
+    }
+
+    .lang-more {
+      padding: 9px 14px;
+      font-size: 13px;
+      color: #7f9fd0;
+    }
+
+    .lang-current {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #9fb8e8;
+      font-weight: 500;
+    }
+
+    /* Language Selector Theme Variants */
+    html[data-theme="light"] .lang-select {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    html[data-theme="light"] .lang-select-label {
+      color: #475569;
+    }
+
+    html[data-theme="light"] .lang-search {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    html[data-theme="light"] .lang-dropdown {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+
+    html[data-theme="light"] .lang-opt {
+      color: #334155;
+    }
+
+    html[data-theme="light"] .lang-opt:hover {
+      background: #e2e8f0;
+    }
+
+    html[data-theme="light"] .lang-opt.sel {
+      background: #2563eb;
+      color: white;
+    }
+
+    html[data-theme="light"] .lang-current {
+      color: #475569;
+    }
+
+    html[data-theme="dark"] .lang-select {
+      background: #1a1d26;
+      border-color: #2e3446;
+      color: white;
+    }
+
+    html[data-theme="dark"] .lang-select-label {
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] .lang-search {
+      background: #1a1d26;
+      border-color: #2e3446;
+      color: white;
+    }
+
+    html[data-theme="dark"] .lang-dropdown {
+      background: #1a1d26;
+      border-color: #2e3446;
+    }
+
+    html[data-theme="dark"] .lang-opt {
+      color: #94a3b8;
+    }
+
+    html[data-theme="dark"] .lang-opt:hover {
+      background: #2e3446;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="tabs">
+    <img id="logo" src="assets/Icon.png" alt="লোগো">
+    <button class="tab active" data-tab="home" data-i18n="tabHome">হোম</button>
+    <button class="tab" data-tab="notebook" data-i18n="tabNotebook">নোটবুক</button>
+    <button class="tab" data-tab="settings" data-i18n="tabSettings">সেটিং</button>
+    <button class="tab" data-tab="transaction" data-i18n="tabTransaction">লেনদেন</button>
+  </div>
+
+  <div id="homeView" class="view">
+    <div class="stack">
+      <div id="time"></div>
+      <div id="date"></div>
+      <div id="weather">আবহাওয়া লোড হচ্ছে...</div>
+    </div>
+    <div id="changeLoc" data-i18n="changeLoc">লোকেশন বদলান</div>
+  </div>
+
+  <div id="nbView" class="view hidden">
+    <div class="nb">
+      <div class="nb-cols">
+        <div class="nb-cal">
+          <div class="nb-label" data-i18n="nbYearLabel">সাল</div>
+          <div class="chip-row" id="nbYears"></div>
+          <div class="nb-label" data-i18n="nbMonthLabel">মাস</div>
+          <div class="chip-row" id="nbMonths"></div>
+          <div class="nb-label" data-i18n="nbDateLabel">তারিখ</div>
+          <div class="days-grid" id="nbDays"></div>
+          <button id="nbTodayBtn" data-i18n="nbTodayBtn">আজকে ফিরে যান</button>
+          <div class="nb-hint" data-i18n="nbHint">তারিখে ক্লিক করুন — শুধু আজকের তারিখের নোট লেখা ও দেখা যাবে</div>
+        </div>
+        <div class="nb-side">
+          <div id="sideTitle"></div>
+          <textarea id="sideNote" data-i18n-placeholder="nbPlaceholder" placeholder="আজকের নোট লিখুন..."></textarea>
+          <div class="nb-btn-row">
+            <button id="sideSave" class="nbtn" data-i18n="nbSave">সেভ</button>
+            <button id="sideExport" class="nbtn" data-i18n="nbExport"
+              style="display: none; background: #28a745;">এক্সপোর্ট</button>
+          </div>
+          <div id="sideLock" data-i18n="nbLock">শুধু আজকের (রিয়াল) তারিখেই নোট লেখা যায়</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="settingsView" class="view hidden">
+    <div class="settings-container">
+      <div class="settings-box">
+        <div class="setting-title" data-i18n="themeTitle">থিম নির্বাচন করুন</div>
+        <div class="theme-options">
+          <button class="theme-btn" data-theme-val="blue">
+            <span class="theme-color-preview preview-blue"></span>
+            <span data-i18n="themeBlue">নীল থিম (ডিফল্ট)</span>
+          </button>
+          <button class="theme-btn" data-theme-val="light">
+            <span class="theme-color-preview preview-light"></span>
+            <span data-i18n="themeLight">লাইট থিম</span>
+          </button>
+          <button class="theme-btn" data-theme-val="dark">
+            <span class="theme-color-preview preview-dark"></span>
+            <span data-i18n="themeDark">ডার্ক থিম</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-box">
+        <div class="setting-title" data-i18n="btnColorTitle">বাটন কালার</div>
+        <div class="theme-options">
+          <button class="btn-color-btn" data-btn-color-val="purple-blue">
+            <span class="theme-color-preview preview-purple-blue"></span>
+            <span data-i18n="btnPurpleBlue">বেগুনি ও নীল মিক্স (ডিফল্ট)</span>
+          </button>
+          <button class="btn-color-btn" data-btn-color-val="red">
+            <span class="theme-color-preview preview-red"></span>
+            <span data-i18n="btnRed">লাল</span>
+          </button>
+          <button class="btn-color-btn" data-btn-color-val="blue">
+            <span class="theme-color-preview preview-btn-blue"></span>
+            <span data-i18n="btnBlue">নীল</span>
+          </button>
+          <button class="btn-color-btn" data-btn-color-val="green">
+            <span class="theme-color-preview preview-green"></span>
+            <span data-i18n="btnGreen">সবুজ</span>
+          </button>
+          <button class="btn-color-btn" data-btn-color-val="yellow">
+            <span class="theme-color-preview preview-yellow"></span>
+            <span data-i18n="btnYellow">হলুদ</span>
+          </button>
+          <button class="btn-color-btn" data-btn-color-val="rainbow">
+            <span class="theme-color-preview preview-rainbow"></span>
+            <span data-i18n="btnRainbow">সব রঙের মিক্স</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-box">
+        <div class="setting-title" data-i18n="langTitle">ভাষা নির্বাচন করুন (Language)</div>
+        <div class="lang-box-container">
+          <label for="langSelect" class="lang-select-label" data-i18n="langSelectLabel">ভাষা বেছে নিন:</label>
+          <select id="langSelect" class="lang-select">
+            <option value="bn" selected>বাংলা (Bengali) - ডিফল্ট</option>
+            <option value="en">English (ইংরেজি)</option>
+            <option value="ar">العربية (আরবি)</option>
+            <option value="hi">हिन्दी (হিন্দি)</option>
+            <option value="es">Español (স্প্যানিশ)</option>
+            <option value="fr">Français (ফরাসি)</option>
+            <option value="de">Deutsch (জার্মান)</option>
+            <option value="zh">中文 (চাইনিজ)</option>
+            <option value="ja">日本語 (জাপানি)</option>
+            <option value="ru">Русский (রুশ)</option>
+            <option value="pt">Português (পর্তুগিজ)</option>
+            <option value="ur">اردو (উর্দু)</option>
+            <option value="tr">Türkçe (তুর্কি)</option>
+            <option value="ko">한국어 (কোরিয়ান)</option>
+            <option value="it">Italiano (ইতালীয়)</option>
+          </select>
+
+          <div style="margin-top: 14px;">
+            <label for="langSearch" class="lang-select-label" data-i18n="langSearchLabel">অন্যান্য ভাষা খুঁজুন:</label>
+            <div class="lang-wrap">
+              <input id="langSearch" class="lang-search" data-i18n-placeholder="langSearchPlaceholder"
+                placeholder="ভাষা খুঁজুন (যেমন: Bengali, বাংলা, bn)..." autocomplete="off">
+              <div id="langDropdown" class="lang-dropdown hidden"></div>
+            </div>
+          </div>
+        </div>
+        <div id="langCurrent" class="lang-current"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="transactionView" class="view hidden">
+    <div class="tx-container">
+      <div class="tx-top-bar">
+        <button id="txBackBtn" class="nbtn tx-back-btn">← ব্যাক</button>
+        <button id="txTakaBtn" class="tx-taka-btn" title="ব্যালেন্স হিসাব">৳</button>
+      </div>
+
+      <div class="settings-box tx-box">
+        <div class="setting-title" style="display: flex; align-items: center; justify-content: space-between;">
+          <span>ব্যাংক ব্যালেন্স ও ক্যাশ হিসাব</span>
+          <span style="font-size: 24px; color: #ffd700;">৳</span>
+        </div>
+
+        <div class="tx-form">
+          <div class="tx-field">
+            <label class="tx-label" for="bankBalanceInput">আপনার ব্যাংক ব্যালেন্স (Bank Balance):</label>
+            <input type="number" id="bankBalanceInput" class="tx-input" placeholder="যেমন: 50000" min="0">
+          </div>
+
+          <div class="tx-field">
+            <label class="tx-label" for="cashBalanceInput">নিজের কাছে কত টাকা আছে (Cash in Hand):</label>
+            <input type="number" id="cashBalanceInput" class="tx-input" placeholder="যেমন: 5000" min="0">
+          </div>
+
+          <div class="tx-btn-row">
+            <button id="txSaveBtn" class="nbtn">সেভ করুন</button>
+          </div>
+
+          <div id="txSavedMsg" class="tx-saved-msg hidden">সফলভাবে সেভ করা হয়েছে!</div>
+
+          <div class="tx-summary-card">
+            <div class="tx-summary-item">
+              <span class="tx-summary-title">ব্যাংক ব্যালেন্স:</span>
+              <span id="bankBalanceDisplay" class="tx-summary-val">৳ 0</span>
+            </div>
+            <div class="tx-summary-item">
+              <span class="tx-summary-title">নিজের কাছে ক্যাশ:</span>
+              <span id="cashBalanceDisplay" class="tx-summary-val">৳ 0</span>
+            </div>
+            <div class="tx-summary-item total">
+              <span class="tx-summary-title">সর্বমোট টাকা:</span>
+              <span id="totalBalanceDisplay" class="tx-summary-val">৳ 0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <div id="setup">
+    <div class="box">
+      <img src="assets/Icon.png" alt="Financial Disk Logo" style="width: 68px; height: 68px; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
+      <div style="color: #66aaff; font-size: 24px; font-weight: bold; margin-top: 4px;">Financial Disk</div>
+      <div class="label" data-i18n="setupTitle" style="margin-top: 6px;">আপনার লোকেশন বাছুন</div>
+      <select id="locSelect"></select>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <button id="locBtn" data-i18n="setupOk" style="font-weight: bold; padding: 10px 32px; font-size: 17px;">ঠিক আছে</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const timeEl = document.getElementById('time');
+    const dateEl = document.getElementById('date');
+    const weatherEl = document.getElementById('weather');
+    const setupEl = document.getElementById('setup');
+    const locSelect = document.getElementById('locSelect');
+    const locBtn = document.getElementById('locBtn');
+    const changeLocEl = document.getElementById('changeLoc');
+    const homeView = document.getElementById('homeView');
+    const nbViewEl = document.getElementById('nbView');
+    const nbYearsEl = document.getElementById('nbYears');
+    const nbMonthsEl = document.getElementById('nbMonths');
+    const nbDaysEl = document.getElementById('nbDays');
+    const nbTodayBtn = document.getElementById('nbTodayBtn');
+    const sideTitle = document.getElementById('sideTitle');
+    const sideNoteEl = document.getElementById('sideNote');
+    const sideSaveBtn = document.getElementById('sideSave');
+    const sideExportBtn = document.getElementById('sideExport');
+    const sideLock = document.getElementById('sideLock');
+
+    let currentLang = 'bn';
+    try { currentLang = localStorage.getItem('appLang') || 'bn'; } catch (e) { }
+
+    const TRANSLATIONS = {
+      bn: {
+        tabHome: "হোম",
+        tabNotebook: "নোটবুক",
+        tabSettings: "সেটিং",
+        weatherLoading: "আবহাওয়া লোড হচ্ছে...",
+        weatherError: "আবহাওয়া আনা যাচ্ছে না",
+        changeLoc: "লোকেশন বদলান",
+        setupTitle: "আপনার লোকেশন বাছুন",
+        setupOk: "ঠিক আছে",
+        nbYearLabel: "সাল",
+        nbMonthLabel: "মাস",
+        nbDateLabel: "তারিখ",
+        nbTodayBtn: "আজকে ফিরে যান",
+        nbHint: "তারিখে ক্লিক করুন — শুধু আজকের তারিখের নোট লেখা ও দেখা যাবে",
+        nbTodayTitle: "আজকের নোট",
+        nbPlaceholder: "আজকের নোট লিখুন...",
+        nbSave: "সেভ",
+        nbExport: "এক্সপোর্ট",
+        nbLock: "শুধু আজকের (রিয়াল) তারিখেই নোট লেখা যায়",
+        nbNoteTag: "নোট",
+        themeTitle: "থিম নির্বাচন করুন",
+        themeBlue: "নীল থিম (ডিফল্ট)",
+        themeLight: "লাইট থিম",
+        themeDark: "ডার্ক থিম",
+        btnColorTitle: "বাটন কালার",
+        btnPurpleBlue: "বেগুনি ও নীল মিক্স (ডিফল্ট)",
+        btnRed: "লাল",
+        btnBlue: "নীল",
+        btnGreen: "সবুজ",
+        btnYellow: "হলুদ",
+        btnRainbow: "সব রঙের মিক্স",
+        langTitle: "ভাষা নির্বাচন করুন (Language)",
+        langSelectLabel: "ভাষা বেছে নিন:",
+        langSearchLabel: "অন্যান্য ভাষা খুঁজুন:",
+        langSearchPlaceholder: "ভাষা খুঁজুন (যেমন: Bengali, বাংলা, bn)...",
+        langSelectedPrefix: "নির্বাচিত ভাষা: ",
+        langNotFound: "কোন ভাষা পাওয়া যায়নি",
+        langMoreResults: "... আরও ফলাফলের জন্য লিখুন",
+        weatherDesc: {
+          0: 'পরিষ্কার আকাশ', 1: 'প্রধানত পরিষ্কার', 2: 'আংশিক মেঘলা', 3: 'মেঘলা',
+          45: 'কুয়াশা', 48: 'জমা কুয়াশা',
+          51: 'হালকা গুঁড়ি বৃষ্টি', 53: 'গুঁড়ি বৃষ্টি', 55: 'ঘন গুঁড়ি বৃষ্টি',
+          56: 'হিমশীতল গুঁড়ি বৃষ্টি', 57: 'ঘন হিমশীতল গুঁড়ি বৃষ্টি',
+          61: 'হালকা বৃষ্টি', 63: 'মাঝারি বৃষ্টি', 65: 'ভারী বৃষ্টি',
+          66: 'হিমশীতল বৃষ্টি', 67: 'ভারী হিমশীতল বৃষ্টি',
+          71: 'হালকা তুষারপাত', 73: 'তুষারপাত', 75: 'ভারী তুষারপাত', 77: 'তুষারকণা',
+          80: 'হালকা বৃষ্টির ঢেউ', 81: 'বৃষ্টির ঢেউ', 82: 'প্রবল বৃষ্টির ঢেউ',
+          85: 'হালকা তুষার ঢেউ', 86: 'ভারী তুষার ঢেউ',
+          95: 'বজ্রঝড়', 96: 'শিলাবৃষ্টিসহ বজ্রঝড়', 99: 'ভারী শিলাবৃষ্টিসহ বজ্রঝড়'
+        }
+      },
+      en: {
+        tabHome: "Home",
+        tabNotebook: "Notebook",
+        tabSettings: "Settings",
+        weatherLoading: "Loading weather...",
+        weatherError: "Unable to fetch weather",
+        changeLoc: "Change Location",
+        setupTitle: "Select Your Location",
+        setupOk: "OK",
+        nbYearLabel: "Year",
+        nbMonthLabel: "Month",
+        nbDateLabel: "Date",
+        nbTodayBtn: "Back to Today",
+        nbHint: "Click a date — notes can only be written and viewed for today",
+        nbTodayTitle: "Today's Note",
+        nbPlaceholder: "Write today's note...",
+        nbSave: "Save",
+        nbExport: "Export",
+        nbLock: "Notes can only be written on today's (real) date",
+        nbNoteTag: "Note",
+        themeTitle: "Select Theme",
+        themeBlue: "Blue Theme (Default)",
+        themeLight: "Light Theme",
+        themeDark: "Dark Theme",
+        btnColorTitle: "Button Color",
+        btnPurpleBlue: "Purple & Blue Mix (Default)",
+        btnRed: "Red",
+        btnBlue: "Blue",
+        btnGreen: "Green",
+        btnYellow: "Yellow",
+        btnRainbow: "Rainbow Mix",
+        langTitle: "Select Language",
+        langSelectLabel: "Choose Language:",
+        langSearchLabel: "Search Other Languages:",
+        langSearchPlaceholder: "Search language (e.g. bn, en, es)...",
+        langSelectedPrefix: "Selected Language: ",
+        langNotFound: "No language found",
+        langMoreResults: "... Type for more results",
+        weatherDesc: {
+          0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast',
+          45: 'Fog', 48: 'Depositing rime fog',
+          51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle',
+          56: 'Freezing drizzle', 57: 'Dense freezing drizzle',
+          61: 'Slight rain', 63: 'Moderate rain', 65: 'Heavy rain',
+          66: 'Freezing rain', 67: 'Heavy freezing rain',
+          71: 'Slight snow', 73: 'Moderate snow', 75: 'Heavy snow', 77: 'Snow grains',
+          80: 'Slight rain showers', 81: 'Moderate rain showers', 82: 'Violent rain showers',
+          85: 'Slight snow showers', 86: 'Heavy snow showers',
+          95: 'Thunderstorm', 96: 'Thunderstorm with slight hail', 99: 'Thunderstorm with heavy hail'
+        }
+      },
+      es: {
+        tabHome: "Inicio",
+        tabNotebook: "Cuaderno",
+        tabSettings: "Ajustes",
+        weatherLoading: "Cargando clima...",
+        weatherError: "No se pudo obtener el clima",
+        changeLoc: "Cambiar ubicación",
+        setupTitle: "Selecciona tu ubicación",
+        setupOk: "Aceptar",
+        nbYearLabel: "Año",
+        nbMonthLabel: "Mes",
+        nbDateLabel: "Fecha",
+        nbTodayBtn: "Volver a hoy",
+        nbHint: "Haz clic en una fecha — las notas solo se escriben y ven para hoy",
+        nbTodayTitle: "Nota de hoy",
+        nbPlaceholder: "Escribe la nota de hoy...",
+        nbSave: "Guardar",
+        nbExport: "Exportar",
+        nbLock: "Las notas solo se pueden escribir en la fecha de hoy",
+        nbNoteTag: "Nota",
+        themeTitle: "Seleccionar tema",
+        themeBlue: "Tema Azul (Predeterminado)",
+        themeLight: "Tema Claro",
+        themeDark: "Tema Oscuro",
+        btnColorTitle: "Color de botones",
+        btnPurpleBlue: "Mezcla Púrpura y Azul",
+        btnRed: "Rojo",
+        btnBlue: "Azul",
+        btnGreen: "Verde",
+        btnYellow: "Amarillo",
+        btnRainbow: "Mezcla Arcoíris",
+        langTitle: "Seleccionar idioma",
+        langSelectLabel: "Elegir idioma:",
+        langSearchLabel: "Buscar otros idiomas:",
+        langSearchPlaceholder: "Buscar idioma...",
+        langSelectedPrefix: "Idioma seleccionado: ",
+        langNotFound: "No se encontró el idioma",
+        langMoreResults: "... Escribe para ver más resultados"
+      },
+      ar: {
+        tabHome: "الرئيسية",
+        tabNotebook: "دفتر الملاحظات",
+        tabSettings: "الإعدادات",
+        weatherLoading: "جاري تحميل الطقس...",
+        weatherError: "تعذر جلب الطقس",
+        changeLoc: "تغيير الموقع",
+        setupTitle: "اختر موقعك",
+        setupOk: "موافق",
+        nbYearLabel: "السنة",
+        nbMonthLabel: "الشهر",
+        nbDateLabel: "التاريخ",
+        nbTodayBtn: "العودة إلى اليوم",
+        nbHint: "انقر على تاريخ — يمكن كتابة وعرض الملاحظات لليوم فقط",
+        nbTodayTitle: "ملاحظة اليوم",
+        nbPlaceholder: "اكتب ملاحظة اليوم...",
+        nbSave: "حفظ",
+        nbExport: "تصدير",
+        nbLock: "يمكن كتابة الملاحظات فقط في تاريخ اليوم الحقيقي",
+        nbNoteTag: "ملاحظة",
+        themeTitle: "اختر المظهر",
+        themeBlue: "المظهر الأزرق (الافتراضي)",
+        themeLight: "المظهر الفاتح",
+        themeDark: "المظهر الداكن",
+        btnColorTitle: "لون الأزرار",
+        btnPurpleBlue: "مزج أرجواني وأزرق",
+        btnRed: "أحمر",
+        btnBlue: "أزرق",
+        btnGreen: "أخضر",
+        btnYellow: "أصفر",
+        btnRainbow: "مزج قوس قزح",
+        langTitle: "اختر اللغة",
+        langSelectLabel: "اختر اللغة:",
+        langSearchLabel: "البحث عن لغات أخرى:",
+        langSearchPlaceholder: "ابحث عن لغة...",
+        langSelectedPrefix: "اللغة المختارة: ",
+        langNotFound: "لم يتم العثور على لغة",
+        langMoreResults: "... اكتب للمزيد من النتائج"
+      },
+      hi: {
+        tabHome: "होम",
+        tabNotebook: "नोटबुक",
+        tabSettings: "सेटिंग्स",
+        weatherLoading: "मौसम लोड हो रहा है...",
+        weatherError: "मौसम प्राप्त करने में असमर्थ",
+        changeLoc: "स्थान बदलें",
+        setupTitle: "अपना स्थान चुनें",
+        setupOk: "ठीक है",
+        nbYearLabel: "वर्ष",
+        nbMonthLabel: "महीना",
+        nbDateLabel: "तारीख",
+        nbTodayBtn: "आज पर वापस जाएं",
+        nbHint: "तारीख पर क्लिक करें — नोट केवल आज के लिए लिखे और देखे जा सकते हैं",
+        nbTodayTitle: "आज का नोट",
+        nbPlaceholder: "आज का नोट लिखें...",
+        nbSave: "सहेजें",
+        nbExport: "एक्सपोर्ट",
+        nbLock: "केवल आज की (वास्तविक) तारीख पर नोट लिखे जा सकते हैं",
+        nbNoteTag: "नोट",
+        themeTitle: "थीम चुनें",
+        themeBlue: "ब्लू थीम (डिफ़ॉल्ट)",
+        themeLight: "लाइट थीम",
+        themeDark: "डार्क थीम",
+        btnColorTitle: "बटन का रंग",
+        btnPurpleBlue: "बैंगनी और नीला मिक्स",
+        btnRed: "लाल",
+        btnBlue: "नीला",
+        btnGreen: "हरा",
+        btnYellow: "पीला",
+        btnRainbow: "रेनबो मिक्स",
+        langTitle: "भाषा चुनें",
+        langSelectLabel: "भाषा चुनें:",
+        langSearchLabel: "अन्य भाषाएं खोजें:",
+        langSearchPlaceholder: "भाषा खोजें...",
+        langSelectedPrefix: "चुनी गई भाषा: ",
+        langNotFound: "कोई भाषा नहीं मिली",
+        langMoreResults: "... अधिक परिणामों के लिए टाइप करें"
+      },
+      fr: {
+        tabHome: "Accueil",
+        tabNotebook: "Carnet",
+        tabSettings: "Paramètres",
+        weatherLoading: "Chargement météo...",
+        weatherError: "Impossible de charger la météo",
+        changeLoc: "Changer de lieu",
+        setupTitle: "Sélectionnez votre emplacement",
+        setupOk: "OK",
+        nbYearLabel: "Année",
+        nbMonthLabel: "Mois",
+        nbDateLabel: "Date",
+        nbTodayBtn: "Retour à aujourd'hui",
+        nbHint: "Cliquez sur une date — les notes ne peuvent être écrites et consultées que pour aujourd'hui",
+        nbTodayTitle: "Note d'aujourd'hui",
+        nbPlaceholder: "Écrire la note d'aujourd'hui...",
+        nbSave: "Enregistrer",
+        nbExport: "Exporter",
+        btnRed: "أحمر",
+        btnBlue: "أزرق",
+        btnGreen: "أخضر",
+        btnYellow: "أصفر",
+        btnRainbow: "مزج قوس قزح",
+        langTitle: "اختر اللغة",
+        langSelectLabel: "اختر اللغة:",
+        langSearchLabel: "البحث عن لغات أخرى:",
+        langSearchPlaceholder: "ابحث عن لغة...",
+        langSelectedPrefix: "اللغة المختارة: ",
+        langNotFound: "لم يتم العثور على لغة",
+        langMoreResults: "... اكتب للمزيد من النتائج"
+      },
+      hi: {
+        tabHome: "होम",
+        tabNotebook: "नोटबुक",
+        tabSettings: "सेटिंग्स",
+        weatherLoading: "मौसम लोड हो रहा है...",
+        weatherError: "मौसम प्राप्त करने में असमर्थ",
+        changeLoc: "स्थान बदलें",
+        setupTitle: "अपना स्थान चुनें",
+        setupOk: "ठीक है",
+        nbYearLabel: "वर्ष",
+        nbMonthLabel: "महीना",
+        nbDateLabel: "तारीख",
+        nbTodayBtn: "आज पर वापस जाएं",
+        nbHint: "तारीख पर क्लिक करें — नोट केवल आज के लिए लिखे और देखे जा सकते हैं",
+        nbTodayTitle: "आज का नोट",
+        nbPlaceholder: "आज का नोट लिखें...",
+        nbSave: "सहेजें",
+        nbLock: "केवल आज की (वास्तविक) तारीख पर नोट लिखे जा सकते हैं",
+        nbNoteTag: "नोट",
+        themeTitle: "थीम चुनें",
+        themeBlue: "ब्लू थीम (डिफ़ॉल्ट)",
+        themeLight: "लाइट थीम",
+        themeDark: "डार्क थीम",
+        btnColorTitle: "बटन का रंग",
+        btnPurpleBlue: "बैंगनी और नीला मिक्स",
+        btnRed: "लाल",
+        btnBlue: "नीला",
+        btnGreen: "हरा",
+        btnYellow: "पीला",
+        btnRainbow: "रेनबो मिक्स",
+        langTitle: "भाषा चुनें",
+        langSelectLabel: "भाषा चुनें:",
+        langSearchLabel: "अन्य भाषाएं खोजें:",
+        langSearchPlaceholder: "भाषा खोजें...",
+        langSelectedPrefix: "चुनी गई भाषा: ",
+        langNotFound: "कोई भाषा नहीं मिली",
+        langMoreResults: "... अधिक परिणामों के लिए टाइप करें"
+      },
+      fr: {
+        tabHome: "Accueil",
+        tabNotebook: "Carnet",
+        tabSettings: "Paramètres",
+        weatherLoading: "Chargement météo...",
+        weatherError: "Impossible de charger la météo",
+        changeLoc: "Changer de lieu",
+        setupTitle: "Sélectionnez votre emplacement",
+        setupOk: "OK",
+        nbYearLabel: "Année",
+        nbMonthLabel: "Mois",
+        nbDateLabel: "Date",
+        nbTodayBtn: "Retour à aujourd'hui",
+        nbHint: "Cliquez sur une date — les notes ne peuvent être écrites et consultées que pour aujourd'hui",
+        nbTodayTitle: "Note d'aujourd'hui",
+        nbPlaceholder: "Écrire la note d'aujourd'hui...",
+        nbSave: "Enregistrer",
+        nbLock: "Les notes ne peuvent être écrites qu'à la date d'aujourd'hui",
+        nbNoteTag: "Note",
+        themeTitle: "Sélectionner le thème",
+        themeBlue: "Thème Bleu (Par défaut)",
+        themeLight: "Thème Clair",
+        themeDark: "Thème Sombre",
+        btnColorTitle: "Couleur des boutons",
+        btnPurpleBlue: "Mélange Violet & Bleu",
+        btnRed: "Rouge",
+        btnBlue: "Bleu",
+        btnGreen: "Vert",
+        btnYellow: "Jaune",
+        btnRainbow: "Mélange Arc-en-ciel",
+        langTitle: "Sélectionner la langue",
+        langSelectLabel: "Choisir la langue:",
+        langSearchLabel: "Rechercher d'autres langues:",
+        langSearchPlaceholder: "Rechercher une langue...",
+        langSelectedPrefix: "Langue sélectionnée: ",
+        langNotFound: "Aucune langue trouvée",
+        langMoreResults: "... Saisissez pour voir plus"
+      }
+    };
+
+    let activeDateFmt = new Intl.DateTimeFormat(currentLang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    let activeNumFmt = new Intl.NumberFormat(currentLang);
+
+    function t(key) {
+      if (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) {
+        return TRANSLATIONS[currentLang][key];
+      }
+      if (TRANSLATIONS['en'] && TRANSLATIONS['en'][key]) {
+        return TRANSLATIONS['en'][key];
+      }
+      return (TRANSLATIONS['bn'] && TRANSLATIONS['bn'][key]) || key;
+    }
+
+    function getMonthNames(lang) {
+      try {
+        const fmt = new Intl.DateTimeFormat(lang, { month: 'long' });
+        const arr = [];
+        for (let m = 0; m < 12; m++) arr.push(fmt.format(new Date(2026, m, 1)));
+        return arr;
+      } catch (e) {
+        return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      }
+    }
+
+    function getWeekdayNames(lang) {
+      try {
+        const fmt = new Intl.DateTimeFormat(lang, { weekday: 'short' });
+        const arr = [];
+        for (let d = 0; d < 7; d++) arr.push(fmt.format(new Date(2026, 0, 4 + d)));
+        return arr;
+      } catch (e) {
+        return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      }
+    }
+
+    function updateTranslations() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        const txt = t(key);
+        if (txt) el.textContent = txt;
+      });
+
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.dataset.i18nPlaceholder;
+        const txt = t(key);
+        if (txt) el.placeholder = txt;
+      });
+
+      try {
+        activeDateFmt = new Intl.DateTimeFormat(currentLang, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      } catch (e) {
+        activeDateFmt = new Intl.DateTimeFormat('bn-BD', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      try {
+        activeNumFmt = new Intl.NumberFormat(currentLang);
+      } catch (e) {
+        activeNumFmt = new Intl.NumberFormat('bn-BD');
+      }
+
+      if (typeof tick === 'function') tick();
+      if (typeof loadWeather === 'function') loadWeather();
+      if (typeof drawNotebook === 'function') drawNotebook();
+    }
+
+    const LOCATIONS = [
+      { name: 'গবিন্দগাঞ্জ কুঠিবাড়ি', lat: 25.3617, lon: 89.3856 },
+      { name: 'ঢাকা', lat: 23.8103, lon: 90.4125 },
+      { name: 'ফরিদপুর', lat: 23.6070, lon: 89.8429 },
+      { name: 'গাজীপুর', lat: 24.0023, lon: 90.4264 },
+      { name: 'গোপালগঞ্জ', lat: 23.0050, lon: 89.8266 },
+      { name: 'কিশোরগঞ্জ', lat: 24.4449, lon: 90.7766 },
+      { name: 'মাদারীপুর', lat: 23.1641, lon: 90.1897 },
+      { name: 'মানিকগঞ্জ', lat: 23.8624, lon: 90.0047 },
+      { name: 'মুন্সীগঞ্জ', lat: 23.5422, lon: 90.5305 },
+      { name: 'নারায়ণগঞ্জ', lat: 23.6205, lon: 90.4996 },
+      { name: 'নরসিংদী', lat: 23.9322, lon: 90.7151 },
+      { name: 'রাজবাড়ী', lat: 23.7574, lon: 89.6444 },
+      { name: 'শরীয়তপুর', lat: 23.2423, lon: 90.4348 },
+      { name: 'টাঙ্গাইল', lat: 24.2513, lon: 89.9167 },
+      { name: 'বাগেরহাট', lat: 22.6516, lon: 89.7859 },
+      { name: 'চুয়াডাঙ্গা', lat: 23.6402, lon: 88.8418 },
+      { name: 'যশোর', lat: 23.1697, lon: 89.2137 },
+      { name: 'ঝিনাইদহ', lat: 23.5450, lon: 89.1539 },
+      { name: 'খুলনা', lat: 22.8456, lon: 89.5403 },
+      { name: 'কুষ্টিয়া', lat: 23.9013, lon: 89.1206 },
+      { name: 'মাগুরা', lat: 23.4855, lon: 89.4198 },
+      { name: 'মেহেরপুর', lat: 23.7622, lon: 88.6318 },
+      { name: 'নড়াইল', lat: 23.1725, lon: 89.5127 },
+      { name: 'সাতক্ষীরা', lat: 22.7185, lon: 89.0705 },
+      { name: 'বান্দরবান', lat: 22.1953, lon: 92.2184 },
+      { name: 'ব্রাহ্মণবাড়িয়া', lat: 23.9571, lon: 91.1119 },
+      { name: 'চাঁদপুর', lat: 23.2333, lon: 90.6712 },
+      { name: 'চট্টগ্রাম', lat: 22.3569, lon: 91.7832 },
+      { name: 'কুমিল্লা', lat: 23.4607, lon: 91.1809 },
+      { name: 'কক্সবাজার', lat: 21.4272, lon: 92.0058 },
+      { name: 'ফেনী', lat: 23.0159, lon: 91.3976 },
+      { name: 'খাগড়াছড়ি', lat: 23.1193, lon: 91.9847 },
+      { name: 'লক্ষ্মীপুর', lat: 22.9447, lon: 90.8282 },
+      { name: 'নোয়াখালী', lat: 22.8696, lon: 91.0995 },
+      { name: 'রাঙ্গামাটি', lat: 22.6629, lon: 92.1736 },
+      { name: 'বগুড়া', lat: 24.8465, lon: 89.3773 },
+      { name: 'জয়পুরহাট', lat: 25.0205, lon: 89.0253 },
+      { name: 'নওগাঁ', lat: 24.7936, lon: 88.9318 },
+      { name: 'নাটোর', lat: 24.4206, lon: 89.0003 },
+      { name: 'চাঁপাইনবাবগঞ্জ', lat: 24.5965, lon: 88.2775 },
+      { name: 'পাবনা', lat: 24.0064, lon: 89.2372 },
+      { name: 'রাজশাহী', lat: 24.3745, lon: 88.6042 },
+      { name: 'সিরাজগঞ্জ', lat: 24.4534, lon: 89.7007 },
+      { name: 'হবিগঞ্জ', lat: 24.3746, lon: 91.4155 },
+      { name: 'মৌলভীবাজার', lat: 24.4829, lon: 91.7774 },
+      { name: 'সুনামগঞ্জ', lat: 25.0658, lon: 91.3950 },
+      { name: 'সিলেট', lat: 24.8949, lon: 91.8687 },
+      { name: 'দিনাজপুর', lat: 25.6217, lon: 88.6354 },
+      { name: 'গাইবান্ধা', lat: 25.3288, lon: 89.5281 },
+      { name: 'কুড়িগ্রাম', lat: 25.8072, lon: 89.6295 },
+      { name: 'লালমনিরহাট', lat: 25.9923, lon: 89.2847 },
+      { name: 'নীলফামারী', lat: 25.9317, lon: 88.8560 },
+      { name: 'পঞ্চগড়', lat: 26.3411, lon: 88.5542 },
+      { name: 'রংপুর', lat: 25.7439, lon: 89.2752 },
+      { name: 'ঠাকুরগাঁও', lat: 26.0337, lon: 88.4616 },
+      { name: 'জামালপুর', lat: 24.9375, lon: 89.9372 },
+      { name: 'ময়মনসিংহ', lat: 24.7471, lon: 90.4025 },
+      { name: 'নেত্রকোণা', lat: 24.8103, lon: 90.7279 },
+      { name: 'শেরপুর', lat: 25.0205, lon: 90.0153 },
+      { name: 'বরগুনা', lat: 22.1596, lon: 90.1256 },
+      { name: 'বরিশাল', lat: 22.7010, lon: 90.3535 },
+      { name: 'ভোলা', lat: 22.6859, lon: 90.6482 },
+      { name: 'ঝালকাঠি', lat: 22.6406, lon: 90.1987 },
+      { name: 'পটুয়াখালী', lat: 22.3596, lon: 90.3298 },
+      { name: 'পিরোজপুর', lat: 22.5841, lon: 89.9720 }
+    ];
+
+    let audioCtx = null;
+    let lastBeepHour = -1;
+
+    let lat = null, lon = null, placeName = '';
+
+    function ensureAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    document.addEventListener('click', ensureAudio);
+    document.addEventListener('keydown', ensureAudio);
+
+    function beep() {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 1000;
+      gain.gain.value = 0.3;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.6);
+    }
+
+    const placeholderOpt = document.createElement('option');
+    placeholderOpt.value = "";
+    placeholderOpt.textContent = "-- আপনার লোকেশন বেছে নিন --";
+    placeholderOpt.disabled = true;
+    placeholderOpt.selected = true;
+    locSelect.appendChild(placeholderOpt);
+
+    LOCATIONS.forEach((loc, i) => {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = loc.name;
+      locSelect.appendChild(opt);
+    });
+
+    try {
+      const saved = JSON.parse(localStorage.getItem('clockLoc'));
+      if (saved && typeof saved.lat === 'number') {
+        lat = saved.lat;
+        lon = saved.lon;
+        placeName = saved.name;
+        const idx = LOCATIONS.findIndex(l => l.name === saved.name);
+        if (idx >= 0) locSelect.value = String(idx);
+      }
+    } catch (e) { }
+
+    function submitLocation() {
+      if (locSelect.value === "") return;
+      let idx = Number(locSelect.value);
+      if (isNaN(idx) || idx < 0 || idx >= LOCATIONS.length) return;
+      const loc = LOCATIONS[idx];
+      if (!loc) return;
+      lat = loc.lat;
+      lon = loc.lon;
+      placeName = loc.name;
+      try {
+        localStorage.setItem('clockLoc', JSON.stringify({ name: placeName, lat: lat, lon: lon }));
+      } catch (e) { }
+      setupEl.style.display = 'none';
+      loadWeather();
+    }
+
+    locBtn.addEventListener('click', submitLocation);
+    locSelect.addEventListener('change', submitLocation);
+    locSelect.addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitLocation();
+    });
+    locSelect.addEventListener('dblclick', submitLocation);
+
+    function loadWeather() {
+      if (lat === null) return;
+      weatherEl.textContent = t('weatherLoading');
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
+        '&longitude=' + lon + '&current=temperature_2m,weather_code';
+      fetch(url)
+        .then(r => r.json())
+        .then(d => {
+          const temp = Math.round(d.current.temperature_2m);
+          const descDict = (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang].weatherDesc) ||
+            TRANSLATIONS.en.weatherDesc || TRANSLATIONS.bn.weatherDesc;
+          const desc = descDict[d.current.weather_code] || '';
+          weatherEl.textContent = placeName + ' · ' + activeNumFmt.format(temp) + '°C · ' + desc;
+        })
+        .catch(() => {
+          weatherEl.textContent = t('weatherError');
+        });
+    }
+
+    const locCancelBtn = document.getElementById('locCancelBtn');
+    if (locCancelBtn) {
+      locCancelBtn.addEventListener('click', () => {
+        if (lat !== null) {
+          setupEl.style.display = 'none';
+        }
+      });
+    }
+
+    changeLocEl.addEventListener('click', () => {
+      const idx = LOCATIONS.findIndex(l => l.name === placeName);
+      if (idx >= 0) locSelect.value = String(idx);
+      setupEl.style.display = 'flex';
+    });
+
+    setInterval(loadWeather, 10 * 60 * 1000);
+
+    const settingsViewEl = document.getElementById('settingsView');
+    const transactionViewEl = document.getElementById('transactionView');
+    const bankBalanceInput = document.getElementById('bankBalanceInput');
+    const cashBalanceInput = document.getElementById('cashBalanceInput');
+    const txSaveBtn = document.getElementById('txSaveBtn');
+    const txBackBtn = document.getElementById('txBackBtn');
+    const txTakaBtn = document.getElementById('txTakaBtn');
+    const bankBalanceDisplay = document.getElementById('bankBalanceDisplay');
+    const cashBalanceDisplay = document.getElementById('cashBalanceDisplay');
+    const totalBalanceDisplay = document.getElementById('totalBalanceDisplay');
+    const txSavedMsg = document.getElementById('txSavedMsg');
+
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        const tab = t.dataset.tab;
+        homeView.classList.toggle('hidden', tab !== 'home');
+        nbViewEl.classList.toggle('hidden', tab !== 'notebook');
+        settingsViewEl.classList.toggle('hidden', tab !== 'settings');
+        if (transactionViewEl) transactionViewEl.classList.toggle('hidden', tab !== 'transaction');
+      });
+    });
+
+    // Transaction & Balance Handling
+    function loadBalanceData() {
+      let data = { bank: 0, cash: 0 };
+      try {
+        const saved = JSON.parse(localStorage.getItem('clockBalanceData'));
+        if (saved) {
+          data.bank = Number(saved.bank) || 0;
+          data.cash = Number(saved.cash) || 0;
+        }
+      } catch (e) { }
+      if (bankBalanceInput) bankBalanceInput.value = data.bank ? data.bank : '';
+      if (cashBalanceInput) cashBalanceInput.value = data.cash ? data.cash : '';
+      updateBalanceDisplay(data.bank, data.cash);
+    }
+
+    function updateBalanceDisplay(bank, cash) {
+      const total = bank + cash;
+      if (bankBalanceDisplay) bankBalanceDisplay.textContent = '৳ ' + activeNumFmt.format(bank);
+      if (cashBalanceDisplay) cashBalanceDisplay.textContent = '৳ ' + activeNumFmt.format(cash);
+      if (totalBalanceDisplay) totalBalanceDisplay.textContent = '৳ ' + activeNumFmt.format(total);
+    }
+
+    if (txSaveBtn) {
+      txSaveBtn.addEventListener('click', () => {
+        const bank = parseFloat(bankBalanceInput.value) || 0;
+        const cash = parseFloat(cashBalanceInput.value) || 0;
+        try {
+          localStorage.setItem('clockBalanceData', JSON.stringify({ bank: bank, cash: cash }));
+        } catch (e) { }
+        updateBalanceDisplay(bank, cash);
+        if (txSavedMsg) {
+          txSavedMsg.classList.remove('hidden');
+          setTimeout(() => {
+            txSavedMsg.classList.add('hidden');
+          }, 2500);
+        }
+      });
+    }
+
+    if (txBackBtn) {
+      txBackBtn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        const homeTab = document.querySelector('.tab[data-tab="home"]');
+        if (homeTab) homeTab.classList.add('active');
+        homeView.classList.remove('hidden');
+        nbViewEl.classList.add('hidden');
+        settingsViewEl.classList.add('hidden');
+        if (transactionViewEl) transactionViewEl.classList.add('hidden');
+      });
+    }
+
+    if (txTakaBtn) {
+      txTakaBtn.addEventListener('click', () => {
+        if (bankBalanceInput) bankBalanceInput.focus();
+      });
+    }
+
+    loadBalanceData();
+
+    // Theme Management
+    let currentTheme = 'blue';
+    try {
+      currentTheme = localStorage.getItem('appTheme') || 'blue';
+    } catch (e) { }
+
+    function applyTheme(theme) {
+      currentTheme = theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      try {
+        localStorage.setItem('appTheme', theme);
+      } catch (e) { }
+
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        if (btn.dataset.themeVal === theme) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyTheme(btn.dataset.themeVal);
+      });
+    });
+
+    applyTheme(currentTheme);
+
+    // Button Color Management
+    let currentBtnColor = 'purple-blue';
+    try {
+      currentBtnColor = localStorage.getItem('appBtnColor') || 'purple-blue';
+    } catch (e) { }
+
+    function applyBtnColor(color) {
+      currentBtnColor = color;
+      document.documentElement.setAttribute('data-btn-color', color);
+      try {
+        localStorage.setItem('appBtnColor', color);
+      } catch (e) { }
+
+      document.querySelectorAll('.btn-color-btn').forEach(btn => {
+        if (btn.dataset.btnColorVal === color) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    document.querySelectorAll('.btn-color-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyBtnColor(btn.dataset.btnColorVal);
+      });
+    });
+
+    applyBtnColor(currentBtnColor);
+
+    // Language Selection Elements
+    const langSelect = document.getElementById('langSelect');
+    const langSearch = document.getElementById('langSearch');
+    const langDropdown = document.getElementById('langDropdown');
+    const langCurrent = document.getElementById('langCurrent');
+
+    function getLangCodes() {
+      if (window.Intl && Intl.supportedValuesOf) {
+        try { return Intl.supportedValuesOf('language'); } catch (e) { }
+      }
+      return ['bn', 'en', 'ar', 'zh', 'hi', 'es', 'fr', 'de', 'ja', 'ru', 'pt', 'ur', 'tr', 'ko', 'it'];
+    }
+
+    const LANG_CODES = getLangCodes();
+    const langNameCache = {};
+
+    function langNames(code) {
+      if (!langNameCache[code]) {
+        let nat = code, bn = code;
+        try { nat = new Intl.DisplayNames([code], { type: 'language' }).of(code); } catch (e) { }
+        try { bn = new Intl.DisplayNames(['bn'], { type: 'language' }).of(code); } catch (e) { }
+        langNameCache[code] = { nat: nat, bn: bn };
+      }
+      return langNameCache[code];
+    }
+
+    function renderLangDropdown(filter) {
+      langDropdown.innerHTML = '';
+      const f = (filter || '').trim().toLowerCase();
+      let shown = 0;
+      for (const code of LANG_CODES) {
+        const names = langNames(code);
+        const hay = (code + ' ' + names.nat + ' ' + names.bn).toLowerCase();
+        if (f && !hay.includes(f)) continue;
+        const row = document.createElement('div');
+        row.className = 'lang-opt' + (code === currentLang ? ' sel' : '');
+        row.textContent = names.nat + '  (' + names.bn + ')';
+        row.addEventListener('click', () => selectLang(code));
+        langDropdown.appendChild(row);
+        if (++shown >= 100) {
+          const more = document.createElement('div');
+          more.className = 'lang-more';
+          more.textContent = t('langMoreResults');
+          langDropdown.appendChild(more);
+          break;
+        }
+      }
+      if (shown === 0) {
+        const none = document.createElement('div');
+        none.className = 'lang-more';
+        none.textContent = t('langNotFound');
+        langDropdown.appendChild(none);
+      }
+    }
+
+    function selectLang(code) {
+      currentLang = code;
+      document.documentElement.lang = code;
+      try { localStorage.setItem('appLang', code); } catch (e) { }
+      const names = langNames(code);
+      langCurrent.textContent = t('langSelectedPrefix') + names.nat + ' (' + names.bn + ')';
+
+      if (langSelect) {
+        let exists = Array.from(langSelect.options).some(o => o.value === code);
+        if (!exists) {
+          const opt = document.createElement('option');
+          opt.value = code;
+          opt.textContent = names.nat + ' (' + names.bn + ')';
+          langSelect.appendChild(opt);
+        }
+        langSelect.value = code;
+      }
+
+      langDropdown.classList.add('hidden');
+      langSearch.value = '';
+      renderLangDropdown('');
+
+      updateTranslations();
+    }
+
+    if (langSelect) {
+      langSelect.addEventListener('change', () => {
+        selectLang(langSelect.value);
+      });
+    }
+
+    langSearch.addEventListener('input', () => {
+      langDropdown.classList.remove('hidden');
+      renderLangDropdown(langSearch.value);
+    });
+    langSearch.addEventListener('focus', () => {
+      langDropdown.classList.remove('hidden');
+      renderLangDropdown(langSearch.value);
+    });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.lang-wrap')) langDropdown.classList.add('hidden');
+    });
+
+    let nbY = null, nbM = null, nbD = null;
+    let following = true;
+    let nbKey = '';
+
+    function chip(text, active, onclick) {
+      const b = document.createElement('button');
+      b.className = 'chip' + (active ? ' active' : '');
+      b.textContent = text;
+      b.addEventListener('click', onclick);
+      return b;
+    }
+
+    function clampDay() {
+      const total = new Date(nbY, nbM + 1, 0).getDate();
+      if (nbD > total) nbD = total;
+    }
+
+    function drawNotebook() {
+      const now = new Date();
+      const ry = now.getFullYear(), rm = now.getMonth(), rd = now.getDate();
+
+      nbYearsEl.innerHTML = '';
+      const start = Math.min(nbY, ry) - 6;
+      const end = Math.max(nbY, ry) + 6;
+      for (let y = start; y <= end; y++) {
+        nbYearsEl.appendChild(chip(activeNumFmt.format(y), y === nbY, () => {
+          nbY = y; following = false; clampDay(); drawNotebook();
+        }));
+      }
+
+      nbMonthsEl.innerHTML = '';
+      const monthsList = getMonthNames(currentLang);
+      monthsList.forEach((mn, mi) => {
+        nbMonthsEl.appendChild(chip(mn, mi === nbM, () => {
+          nbM = mi; following = false; clampDay(); drawNotebook();
+        }));
+      });
+
+      nbDaysEl.innerHTML = '';
+      const wdList = getWeekdayNames(currentLang);
+      wdList.forEach(w => {
+        const c = document.createElement('div');
+        c.className = 'wd';
+        c.textContent = w;
+        nbDaysEl.appendChild(c);
+      });
+      const first = new Date(nbY, nbM, 1).getDay();
+      const total = new Date(nbY, nbM + 1, 0).getDate();
+      const notes = getNotes();
+      for (let i = 0; i < first; i++) {
+        const c = document.createElement('button');
+        c.className = 'day other';
+        nbDaysEl.appendChild(c);
+      }
+      for (let d = 1; d <= total; d++) {
+        const isSel = d === nbD;
+        const isToday = nbY === ry && nbM === rm && d === rd;
+        const hasNote = !!notes[dkey(nbY, nbM, d)];
+        const b = document.createElement('button');
+        b.className = 'day' + (isSel ? ' sel' : '') + (isToday ? ' today' : '');
+        b.innerHTML = '<span class="dnum">' + activeNumFmt.format(d) + '</span>' +
+          (hasNote ? '<span class="ntag">' + t('nbNoteTag') + '</span>' : '');
+        b.addEventListener('click', () => {
+          nbD = d; following = false; drawNotebook();
+        });
+        nbDaysEl.appendChild(b);
+      }
+
+      nbTodayBtn.style.display = following ? 'none' : '';
+      updateSide();
+    }
+
+    function updateNotebook() {
+      const n = new Date();
+      if (following) {
+        nbY = n.getFullYear();
+        nbM = n.getMonth();
+        nbD = n.getDate();
+      }
+      const k = [nbY, nbM, nbD, n.getFullYear(), n.getMonth(), n.getDate(), following ? 1 : 0].join('-');
+      if (k !== nbKey) {
+        nbKey = k;
+        drawNotebook();
+      }
+    }
+
+    nbTodayBtn.addEventListener('click', () => {
+      following = true;
+      updateNotebook();
+    });
+
+    function dkey(y, m, d) { return y + '-' + m + '-' + d; }
+
+    function getNotes() {
+      try { return JSON.parse(localStorage.getItem('clockNotes')) || {}; }
+      catch (e) { return {}; }
+    }
+
+    function setNotes(n) {
+      try { localStorage.setItem('clockNotes', JSON.stringify(n)); } catch (e) { }
+    }
+
+    function isRealToday() {
+      const n = new Date();
+      return nbY === n.getFullYear() && nbM === n.getMonth() && nbD === n.getDate();
+    }
+
+    function updateSide() {
+      const noteContent = getNotes()[dkey(nbY, nbM, nbD)] || '';
+      if (isRealToday()) {
+        sideTitle.textContent = t('nbTodayTitle');
+        sideNoteEl.value = noteContent;
+        sideNoteEl.readOnly = false;
+        sideSaveBtn.style.display = '';
+        sideLock.style.display = 'none';
+      } else {
+        const monthsList = getMonthNames(currentLang);
+        sideTitle.textContent = activeNumFmt.format(nbD) + ' ' + monthsList[nbM] + ' ' + activeNumFmt.format(nbY);
+        sideNoteEl.value = noteContent;
+        sideNoteEl.readOnly = true;
+        sideSaveBtn.style.display = 'none';
+        sideLock.style.display = noteContent ? 'none' : '';
+      }
+
+      if (noteContent.trim().length > 0) {
+        sideExportBtn.style.display = '';
+      } else {
+        sideExportBtn.style.display = 'none';
+      }
+    }
+
+    sideSaveBtn.addEventListener('click', () => {
+      if (!isRealToday()) return;
+      const n = new Date();
+      const k = dkey(n.getFullYear(), n.getMonth(), n.getDate());
+      const notes = getNotes();
+      const v = sideNoteEl.value.trim();
+      if (v) notes[k] = v; else delete notes[k];
+      setNotes(notes);
+      drawNotebook();
+      updateSide();
+    });
+
+    function escapeHtml(str) {
+      return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    async function exportNote() {
+      const noteContent = getNotes()[dkey(nbY, nbM, nbD)] || sideNoteEl.value.trim();
+      if (!noteContent) return;
+
+      const monthsList = getMonthNames(currentLang);
+      const formattedDate = isRealToday() ?
+        activeDateFmt.format(new Date()) :
+        activeNumFmt.format(nbD) + ' ' + monthsList[nbM] + ' ' + activeNumFmt.format(nbY);
+
+      const filename = `Note_${nbY}-${nbM + 1}-${nbD}.html`;
+
+      const htmlDocument = `<!DOCTYPE html>
+<html lang="${currentLang}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notebook Note - ${formattedDate}</title>
+<link rel="icon" href="LOGO_ICON_SRC">
+<style>
+  body {
+    font-family: 'Nirmala UI', 'Segoe UI', sans-serif;
+    background: #001238;
+    color: #e0e6ed;
+    margin: 0;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .card {
+    background: #001a4d;
+    border: 2px solid #3355aa;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 680px;
+    padding: 32px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    align-self: flex-start;
+  }
+  .header {
+    border-bottom: 2px solid #3355aa;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #cfe0ff;
+    margin: 0;
+  }
+  .date {
+    font-size: 14px;
+    color: #9fb8e8;
+    margin-top: 4px;
+  }
+  .app-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .app-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  }
+  .content {
+    font-size: 16px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #ffffff;
+    background: #000a24;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #3355aa;
+  }
+  .meta {
+    margin-top: 20px;
+    font-size: 13px;
+    color: #7f9fd0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+  }
+  .btn {
+    padding: 9px 20px;
+    font-size: 15px;
+    font-family: inherit;
+    border: none;
+    border-radius: 8px;
+    background: #2266cc;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .btn:hover { background: #3377dd; }
+  @media print {
+    .actions { display: none; }
+    body { background: white; color: black; }
+    .card { border: none; box-shadow: none; background: white; color: black; }
+    .content { background: #f8f9fa; color: black; border: 1px solid #ccc; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div>
+        <h1 class="title">Notebook Note</h1>
+        <div class="date">${formattedDate}</div>
+      </div>
+      <div class="app-brand">
+        <img class="app-logo" src="LOGO_ICON_SRC" alt="Financial Disk Logo">
+        <div style="font-size: 20px; color: #66aaff; font-weight: bold;">Financial Disk</div>
+      </div>
+    </div>
+    <div class="content">${escapeHtml(noteContent)}</div>
+    <div class="meta">
+      <span>Location: ${placeName || 'Default'}</span>
+      <span>Exported from Financial Disk</span>
+    </div>
+    <div class="actions">
+      <button class="btn" onclick="window.print()">Print / Save PDF</button>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      if (window.electronAPI && window.electronAPI.exportNote) {
+        await window.electronAPI.exportNote({ filename, content: htmlDocument });
+      } else {
+        const blob = new Blob([htmlDocument], { type: 'text/html;charset=utf-8' });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        a.click();
+        window.open(blobUrl, '_blank');
+      }
+    }
+
+    sideExportBtn.addEventListener('click', exportNote);
+
+    function tick() {
+      const now = new Date();
+      let h = now.getHours();
+      const ampm = h >= 12 ? 'pm' : 'am';
+      h = h % 12;
+      if (h === 0) h = 12;
+      const pad = n => String(n).padStart(2, '0');
+      timeEl.textContent = activeNumFmt.format(h) + ':' + activeNumFmt.format(now.getMinutes()).padStart(2, '0') + ':' + activeNumFmt.format(now.getSeconds()).padStart(2, '0') + ' ' + ampm;
+      dateEl.textContent = activeDateFmt.format(now);
+      if (now.getMinutes() === 0 && lastBeepHour !== now.getHours()) {
+        lastBeepHour = now.getHours();
+        ensureAudio();
+        beep();
+      }
+      updateNotebook();
+    }
+
+    selectLang(currentLang);
+    tick();
+    setInterval(tick, 1000);
+
+    let logoShakeTimeout = null;
+    const logoImg = document.getElementById('logo');
+    if (logoImg) {
+      logoImg.addEventListener('click', () => {
+        document.body.classList.remove('shaking');
+        void document.body.offsetWidth;
+        document.body.classList.add('shaking');
+        if (logoShakeTimeout) clearTimeout(logoShakeTimeout);
+        logoShakeTimeout = setTimeout(() => {
+          document.body.classList.remove('shaking');
+        }, 2000);
+      });
+    }
+
+    setupEl.style.display = 'flex';
+    if (locSelect.value === "") {
+      locSelect.selectedIndex = 0;
+    }
+
+    // Register Service Worker for PWA / Mobile Installation
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
