@@ -1,0 +1,29 @@
+{
+  "name": "Financial Disk",
+  "short_name": "FinancialDisk",
+  "description": "Financial Disk Mobile & Desktop Web Application",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#000040",
+  "theme_color": "#000040",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "assets/icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/Icon.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/Icon 2.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
